@@ -11,15 +11,15 @@ import pandas as pd
 #####
 def show_dataframe(data_path):
 	notebook = nbf.v4.new_notebook()
-	code = """
-import pandas as pd
+	code = \
+"""import pandas as pd
 
 # 1. Loading the data
 data = pd.read_csv('../data/high_diamond_ranked_10min.csv')
 
 # 2. Displaying the dataframe
-data
-	"""
+data"""
+
 	notebook['cells'] = [nbf.v4.new_code_cell(code)]
 
 	with open('plots/pretty_dataframe.ipynb', 'w') as file:
@@ -47,7 +47,7 @@ def plot_bars(labels,values,figname,ylabel=None,ylim=None):
 #####
 # 1. Loading the dataset
 # a. displaying the dataframe into a jupyter notebook
-#show_dataframe('data/high_diamond_ranked_10min.csv')
+show_dataframe('data/high_diamond_ranked_10min.csv')
 
 # b. reading the data
 print('| Reading the data')
@@ -56,13 +56,13 @@ data = pd.read_csv('data/high_diamond_ranked_10min.csv')
 # 2. Pre-processing the data
 # a. counting the class distribution (0 lose - 1 win)
 print('| Counting Win-Lose')
-win = list(data.iloc[1:,1]).count(1)
-lose = len(data) - win - 1
+win = list(data.iloc[:,1]).count(1)
+lose = len(data) - win
 print('> Win:',win,'| Lose:',lose)
 
 # b. plotting the data distribution
 plot_bars(['Blue Victory','Red Victory'], [win,lose],
 	'win-lose_dist',ylabel='Number of Games',ylim=(0,6000))
 
-# c. defining the parameters and class label
-
+# c. splitting the game ids, parameters and class label
+gamesId, X, y = data.iloc[:,0], data.iloc[:,2:],data.iloc[:,1]
