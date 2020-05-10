@@ -1,4 +1,8 @@
 import numpy as np
+import pandas as pd
+import plot
+from sklearn.decomposition import PCA
+from sklearn.preprocessing import StandardScaler
 
 def split_data_and_class(dataset,data_index,class_index):
 	X, y = dataset.iloc[:,data_index],dataset.iloc[:,class_index]
@@ -40,3 +44,48 @@ def write_dataset(X,y,header,filename='dataset.csv'):
 					file.write(str(params[i])+'\n')
 				else:
 					file.write(str(params[i])+',')
+
+def get_data(scale=False,pca=False,show_details=False,open_notebook=False):
+	# 1. Loading the original dataset
+	print('| Reading the data')
+	dataset = pd.read_csv('data/high_diamond_ranked_10min.csv')
+
+	# 2. Pre-processing the data
+	# a. splitting parameters and class labels
+	X,y = split_data_and_class(dataset,range(2,len(dataset.iloc[0,:])),1)
+
+	# b. analysing class distribution
+	if show_details:
+		distribution = class_distribution(y,labels={1:'Win',0:'Lose'},print_=True)
+		plot.bars(['Blue Victory','Red Victory'], [distribution['Win'],distribution['Lose']],
+			'win-lose_bars.pdf',ylabel='Number of Games',ylim=(0,6000))
+
+	if scale:
+		# c. getting header information
+		header = list(X.columns)
+
+		# d. scaling the data
+		scaler = StandardScaler()
+		X = scaler.fit_transform(X,y)
+
+		# e. saving the scaled data
+		header.insert(0,'blueWins')
+		write_dataset(X,y,header,'data/pre_processed_high_diamond_ranked_10min.csv')
+	elif pca:
+		pca_ = PCA(.99)
+		X = pca_.fit_transform(X,y)
+		print('n_components:',pca_.n_components_)
+		print('explained_variance_ratio:',pca_.explained_variance_ratio_)
+		print('singular_values:',pca_.singular_values_)
+	else:
+		X = np.array(X)
+		y = np.array(y)
+
+	# 3. Showing the pre processed data frame and
+	# the original data frame into jupyter
+	if open_notebook:
+		plot.jupyter_dataframes(['../data/high_diamond_ranked_10min.csv',\
+						'../data/pre_processed_high_diamond_ranked_10min.csv'])
+
+	# 4. Returning pre-processed data
+	return X, y

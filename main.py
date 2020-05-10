@@ -1,34 +1,29 @@
-import pandas as pd
+import numpy as np
 import plot
-from preprocessing import *
-from sklearn.preprocessing import StandardScaler
+import preprocessing
+from sklearn.model_selection import cross_validate, learning_curve
+from sklearn.neural_network import MLPClassifier
 
 # 1. Loading the dataset
-print('| Reading the data')
-dataset = pd.read_csv('data/high_diamond_ranked_10min.csv')
+print("#####\n# Pre-Processing\n#####")
+X, y = preprocessing.get_data(pca=True)
+print('| Number of samples:',len(X))
+print('| Number of parameters:',len(X[0]))
+print('| Number of classes:',len(np.unique(y)))
 
-# 2. Pre-processing the data
-# a. splitting parameters and class labels
-X,y = split_data_and_class(dataset,range(2,len(dataset.iloc[0,:])),1)
+# 2. Starting the learning process
+print("#####\n# Learning Process\n#####")
+# a. creating the mlps
+classifiers = \
+	{'MLP': MLPClassifier(hidden_layer_sizes=(4,8,8,8,4,),activation='relu', solver='adam', max_iter=500),}
 
-# b. analysing class distribution
-distribution = class_distribution(y,labels={1:'Win',0:'Lose'},print_=True)
+# b. training it and predicting
+for mlp in classifiers:
+	train_sizes, train_scores, test_scores = learning_curve(classifiers[mlp], X, y,\
+	 train_sizes=np.array([0.1, 0.25, 0.5, 0.75, 1. ]), cv=5)
 
-plot.bars(['Blue Victory','Red Victory'], [distribution['Win'],distribution['Lose']],
-	'win-lose_bars.pdf',ylabel='Number of Games',ylim=(0,6000))
-
-# c. getting header information
-header = list(X.columns)
-
-# d. scaling the data
-scaler = StandardScaler()
-X = scaler.fit_transform(X,y)
-
-# e. saving the scaled data
-header.insert(0,'blueWins')
-write_dataset(X,y,header,'data/pre_processed_high_diamond_ranked_10min.csv')
-
-# 3. Showing the pre processed data frame and
-# the original data frame into jupyter
-plot.jupyter_dataframes(['../data/high_diamond_ranked_10min.csv',\
-				'../data/pre_processed_high_diamond_ranked_10min.csv'])
+	plot.learning_curve(train_sizes,train_scores,test_scores)
+	score = cross_validate(classifiers[mlp],X,y,return_train_score=True,cv=5)
+	
+	print(mlp,np.array(score['train_score']).mean(),np.array(score['test_score']).mean())
+	print(mlp,np.array(train_scores).mean(),np.array(test_scores).mean())
