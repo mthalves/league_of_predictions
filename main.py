@@ -1,6 +1,7 @@
 import numpy as np
 import plot
 import preprocessing
+from scipy.spatial import distance
 from sklearn.model_selection import cross_validate, learning_curve
 from sklearn.neural_network import MLPClassifier
 
@@ -19,11 +20,26 @@ classifiers = \
 
 # b. training it and predicting
 for mlp in classifiers:
-	train_sizes, train_scores, test_scores = learning_curve(classifiers[mlp], X, y,\
-	 train_sizes=np.array([0.1, 0.25, 0.5, 0.75, 1. ]), cv=5)
+	#train_sizes, train_scores, test_scores = learning_curve(classifiers[mlp], X, y,\
+	# train_sizes=np.array([0.1, 0.25, 0.5, 0.75, 1. ]), cv=5)
+	#plot.learning_curve(train_sizes,train_scores,test_scores)
+	#print(mlp,np.array(train_scores).mean(),np.array(test_scores).mean())
 
-	plot.learning_curve(train_sizes,train_scores,test_scores)
-	score = cross_validate(classifiers[mlp],X,y,return_train_score=True,cv=5)
-	
+	score = cross_validate(classifiers[mlp],X,y,return_train_score=True,return_estimator=True,cv=5)
 	print(mlp,np.array(score['train_score']).mean(),np.array(score['test_score']).mean())
-	print(mlp,np.array(train_scores).mean(),np.array(test_scores).mean())
+
+	best_estimator = score['estimator'][list(score['test_score']).index(max(score['test_score']))]
+	y_pred = best_estimator.predict_proba(X)
+	y_prob = np.array([np.array([1,0]) if class_ == 0 else np.array([0,1]) for class_ in y])
+	y_dist = np.diag(distance.cdist(y_pred,y_prob,'chebyshev'))
+
+	print(len(np.where(y_dist<=0.25)[0]))
+	print(len(np.where((0.25<y_dist) & (y_dist<=0.50))[0]))
+	print(len(np.where((0.50<y_dist) & (y_dist<=0.75))[0]))
+	print(len(np.where((0.75<y_dist) & (y_dist<=1.00))[0]))
+	print(y_dist.mean(),y_dist.std())
+
+	y_sort = np.sort(y_dist)
+	plot.line_graph(np.arange(len(y_sort)),y_sort,'Amostra','Erro','predict_proba.pdf')
+
+	#plot.confusion_matrix(best_estimator,X,y)

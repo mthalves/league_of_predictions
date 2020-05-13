@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import nbformat as nbf
 import os
+from sklearn.metrics import plot_confusion_matrix
 
 # Open a jupyter notebook to show a dataframe.
 # Args: 
@@ -79,7 +80,7 @@ def mlps_test_result():
 					'\n\ttest:',data[token[0]]['test']['mean'],data[token[0]]['test']['std'])
 
 def learning_curve(train_sizes,train_scores,test_scores,figname='learning_curve.pdf'):
-	fig = plt.figure()
+	fig = plt.figure(figsize=(8,4))
 
 	train_scores_mean = np.mean(train_scores, axis=1)
 	train_scores_std = np.std(train_scores, axis=1)
@@ -98,4 +99,19 @@ def learning_curve(train_sizes,train_scores,test_scores,figname='learning_curve.
 	         label="Cross-validation score")
 	plt.legend(loc="best")
 
+	plt.xlabel('Número de Amostras')
+	plt.ylabel('Taxa de Acerto')
+	plt.savefig('plots/'+figname,bbox_inches='tight')
+
+def confusion_matrix(estimator,X,y,figname='cm.pdf'):
+	plot_confusion_matrix(estimator,X,y,\
+		normalize='true',display_labels=['Vitória Time Azul','Vitória Time Vermelho'],\
+		cmap=plt.cm.Blues)
+	plt.savefig('plots/'+figname,bbox_inches='tight')
+
+def line_graph(x,y,xlabel,ylabel,figname='graph.pdf'):
+	fig = plt.figure(figsize=(8,6))
+	plt.plot(x, y, '-', color="b")
+	plt.xlabel(xlabel)
+	plt.ylabel(ylabel)
 	plt.savefig('plots/'+figname,bbox_inches='tight')

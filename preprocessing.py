@@ -57,12 +57,12 @@ def get_data(scale=False,pca=False,show_details=False,open_notebook=False):
 	# b. analysing class distribution
 	if show_details:
 		distribution = class_distribution(y,labels={1:'Win',0:'Lose'},print_=True)
-		plot.bars(['Blue Victory','Red Victory'], [distribution['Win'],distribution['Lose']],
-			'win-lose_bars.pdf',ylabel='Number of Games',ylim=(0,6000))
+		plot.bars(['Vitória Time Azul','Vitória Time Vermelho'], [distribution['Win'],distribution['Lose']],
+			'win-lose_bars.pdf',ylabel='Número de Jogos',ylim=(0,6000))
 
+	header = list(X.columns)
 	if scale:
 		# c. getting header information
-		header = list(X.columns)
 
 		# d. scaling the data
 		scaler = StandardScaler()
@@ -74,13 +74,16 @@ def get_data(scale=False,pca=False,show_details=False,open_notebook=False):
 	elif pca:
 		pca_ = PCA(.99)
 		X = pca_.fit_transform(X,y)
-		print('n_components:',pca_.n_components_)
-		print('explained_variance_ratio:',pca_.explained_variance_ratio_)
-		print('singular_values:',pca_.singular_values_)
+		selected_comp = [list(clist).index(max(clist)) for clist in pca_.components_]
+		print('| | selected components (columns index):',selected_comp)
+		print('| | selected components (columns name):',[header[c] for c in selected_comp])
+		print('| | n_components:',pca_.n_components_)
+		print('| | explained_variance_ratio:',pca_.explained_variance_ratio_)
+		print('| | singular_values:',pca_.singular_values_)
 	else:
 		X = np.array(X)
 		y = np.array(y)
-
+		
 	# 3. Showing the pre processed data frame and
 	# the original data frame into jupyter
 	if open_notebook:
