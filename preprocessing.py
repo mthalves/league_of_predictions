@@ -62,13 +62,11 @@ def get_data(scale=False,pca=False,show_details=False,open_notebook=False):
 
 	header = list(X.columns)
 	if scale:
-		# c. getting header information
-
-		# d. scaling the data
 		scaler = StandardScaler()
 		X = scaler.fit_transform(X,y)
 
-		# e. saving the scaled data
+		plot.parameters(X[:100,:])
+
 		header.insert(0,'blueWins')
 		write_dataset(X,y,header,'data/pre_processed_high_diamond_ranked_10min.csv')
 	elif pca:
@@ -80,6 +78,7 @@ def get_data(scale=False,pca=False,show_details=False,open_notebook=False):
 		print('| | n_components:',pca_.n_components_)
 		print('| | explained_variance_ratio:',pca_.explained_variance_ratio_)
 		print('| | singular_values:',pca_.singular_values_)
+		plot.pca(pca_)
 	else:
 		X = np.array(X)
 		y = np.array(y)

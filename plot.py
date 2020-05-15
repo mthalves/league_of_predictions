@@ -36,14 +36,14 @@ data"""
 	# 4. Runnning the notebook into a new terminal tab
 	os.system('gnome-terminal --tab -- jupyter-notebook plots/pretty_dataframe.ipynb')
 
-# Create a bar plot and save it into a PDF file.
+# Create a bar plot and save it.
 # Args:
 # - labels: array of strings; bar names.
 # - values: array or numpy array; height of the bars.
 # - figname: string; name for the saved figure.
 # - ylabel: string; label of the y axis; default None.
 # - ylim: tuple; limits for y axis; default None,
-def bars(labels,values,figname,ylabel=None,ylim=None):
+def bars(labels,values,figname='bars.pdf',ylabel=None,ylim=None):
 	# 1. Create bar plot
 	fig = plt.figure()
 
@@ -60,25 +60,38 @@ def bars(labels,values,figname,ylabel=None,ylim=None):
 	# 2. Saving the figure
 	plt.savefig('plots/'+figname,bbox_inches='tight')
 
-def mlps_test_result():
-	for filename in ['mlp_arch_test.txt','mlp_scaled_test.txt','mlp_pca95_test.txt','mlp_pca99_test.txt']:
-		print(filename)
+# Create a scatter plot of parameter distribution and save it.
+# Args:
+# - parameters: matrix of data.
+# - figname: string; name for the saved figure.
+def parameters(parameters,figname='parameters.pdf'):
+	fig = plt.figure(figsize=(8,6))
 
-		data = {}
-		with open(filename,'r') as file:
-			for line in file:
-				token=line.split(';')
-				train_data = np.array([float(t) for t in token[1].split(',')])
-				test_data = np.array([float(t) for t in token[2].split(',')])
+	x = np.array([j for i in range(len(parameters)) for j in range(len(parameters[i])) ])
+	y = np.array([parameters[i,j] \
+		for i in range(len(parameters)) for j in range(len(parameters[i])) ])
+	plt.scatter(x,y,c=np.sqrt(np.abs(y)))
 
-				data[token[0]] = {}
-				data[token[0]]['train'] = {'mean':train_data.mean(),'std':train_data.std()}
-				data[token[0]]['test'] = {'mean':test_data.mean(),'std':train_data.std()}
+	plt.xlabel('Parâmetro')
+	plt.ylabel('Valor')
+	plt.savefig('plots/'+figname,bbox_inches='tight')
 
-				print('  ',token[0],':\n\ttrain:',\
-					data[token[0]]['train']['mean'],data[token[0]]['train']['std'],\
-					'\n\ttest:',data[token[0]]['test']['mean'],data[token[0]]['test']['std'])
+# Create a line plot of pca explained variance and save it.
+# Args:
+# - parameters: matrix of data.
+# - figname: string; name for the saved figure.
+def pca(pca_,figname='pca.pdf'):
+	plt.plot(np.cumsum(pca_.explained_variance_ratio_))
+	plt.xlabel('Número de componentes',fontsize='x-large')
+	plt.ylabel('Informação acumulada',fontsize='x-large')
+	plt.savefig('plots/'+figname,bbox_inches='tight')
 
+# Create a line plot of the mlp learning curve and save it.
+# Args:
+# - train_sizes: array of ints; size of the training sets used to create the learning curve.
+# - train_scores: array of floats; score for the training sets.
+# - test_scores: array of floats; score for the test sets.
+# - figname: string; name for the saved figure.
 def learning_curve(train_sizes,train_scores,test_scores,figname='learning_curve.pdf'):
 	fig = plt.figure(figsize=(8,4))
 
@@ -103,13 +116,26 @@ def learning_curve(train_sizes,train_scores,test_scores,figname='learning_curve.
 	plt.ylabel('Taxa de Acerto')
 	plt.savefig('plots/'+figname,bbox_inches='tight')
 
+# Plot and save the confusion matrix.
+# Args:
+# - estimator: estimator to predict the data.
+# - X: matrix of floats; parameters.
+# - Y: array of floats; labels.
+# - figname: string; name for the saved figure.
 def confusion_matrix(estimator,X,y,figname='cm.pdf'):
 	plot_confusion_matrix(estimator,X,y,\
 		normalize='true',display_labels=['Vitória Time Azul','Vitória Time Vermelho'],\
 		cmap=plt.cm.Blues)
 	plt.savefig('plots/'+figname,bbox_inches='tight')
 
-def line_graph(x,y,xlabel,ylabel,figname='graph.pdf'):
+# Create a line plot and save it.
+# Args:
+# - x: array; data x position.
+# - y: array; data y position.
+# - xlabel: string; x axis label.
+# - xlabel: string; y axis label.
+# - figname: string; name for the saved figure.
+def line_graph(x,y,xlabel,ylabel,figname='line_graph.pdf'):
 	fig = plt.figure(figsize=(8,6))
 	plt.plot(x, y, '-', color="b")
 	plt.xlabel(xlabel)
